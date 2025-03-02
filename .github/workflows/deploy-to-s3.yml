@@ -35,6 +35,6 @@ jobs:
         run: |
           aws s3 sync dist/book-wise s3://${{ secrets.S3_BUCKET_NAME }} --delete
 
-      - name: Notify Amplify of S3 deployment
+      - name: Deploy to Amplify
         run: |
-          aws amplify start-deployment --app-id ${{ secrets.AMPLIFY_APP_ID }} --branch-name main
+          aws amplify start-job --app-id ${{ secrets.AMPLIFY_APP_ID }} --branch-name main --job-type RELEASE
