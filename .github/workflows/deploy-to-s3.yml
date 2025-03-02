@@ -84,14 +84,11 @@ jobs:
 
           echo "Todos os jobs pendentes foram cancelados com sucesso."
 
-      - name: Update Amplify Build Settings
+      - name: Update Amplify App Settings
         run: |
-          aws amplify update-branch \
+          aws amplify update-app \
             --app-id ${{ secrets.AMPLIFY_APP_ID }} \
-            --branch-name main \
-            --framework "Angular" \
-            --enable-auto-build \
-            --output-dir "portal-bookwise/browser"
+            --custom-rules '[{"source":"/<*>","target":"/index.html","status":"200"}]'
 
       - name: Create Amplify Deployment
         id: create_deployment
