@@ -9,10 +9,9 @@ frontend:
       commands:
         - npm install -g @angular/cli@10  # Instalar o Angular CLI globalmente
         - npm install  # Instalar dependências do projeto
-        - ng version  # Verificar a versão do Angular CLI
     build:
       commands:
-        - ng build --configuration=production  # Executar build de produção
+        - npm run build --configuration=production  # Executar build de produção
   artifacts:
     baseDirectory: dist/book-wise/browser
     files:
