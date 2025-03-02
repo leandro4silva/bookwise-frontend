@@ -31,52 +31,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Cancel previous Amplify deployments
-        run: |
-          echo "Verificando jobs em andamento..."
-          for attempt in {1..5}; do
-            JOBS=$(aws amplify list-jobs \
-              --app-id ${{ secrets.AMPLIFY_APP_ID }} \
-              --branch-name main \
-              --query 'jobSummaries[?status==`PENDING` || status==`RUNNING`].jobId' \
-              --output text)
-
-            if [ -z "$JOBS" ]; then
-              echo "Nenhum job em execução."
-              break
-            fi
-
-            echo "Encontrado(s) job(s) pendente(s): $JOBS"
-            for JOB_ID in $JOBS; do
-              echo "Cancelando job $JOB_ID..."
-              aws amplify stop-job \
-                --app-id ${{ secrets.AMPLIFY_APP_ID }} \
-                --branch-name main \
-                --job-id $JOB_ID
-            done
-
-            echo "Aguardando 5 segundos para verificar novamente..."
-            sleep 5
-          done
-
-          # Verificar novamente após aguardar
-          FINAL_JOBS=$(aws amplify list-jobs \
-            --app-id ${{ secrets.AMPLIFY_APP_ID }} \
-            --branch-name main \
-            --query 'jobSummaries[?status==`PENDING` || status==`RUNNING`].jobId' \
-            --output text)
-
-          if [ -n "$FINAL_JOBS" ]; then
-            echo "Erro: Ainda existem jobs em execução. Cancelamento falhou."
-            exit 1
-          fi
-
-          echo "Todos os jobs pendentes foram cancelados com sucesso."
-
       - name: Deploy to S3
         run: |
           aws s3 sync dist/book-wise s3://${{ secrets.S3_BUCKET_NAME }} --delete
 
-      - name: Deploy to Amplify
-        run: |
-          aws amplify start-job --app-id ${{ secrets.AMPLIFY_APP_ID }} --branch-name main --job-type RELEASE
