@@ -3,14 +3,15 @@ frontend:
   phases:
     preBuild:
       commands:
-        - npm ci  # Instala as dependências do projeto
+        - npm ci
+        - mkdir -p dist/book-wise/browser  # Garante que a pasta existe antes do build
     build:
       commands:
-        - npm run build -- --configuration production  # Gera os arquivos estáticos
+        - npm run build -- --configuration production
   artifacts:
-    baseDirectory: dist/book-wise/browser  # Diretório de saída da build (ajuste conforme necessário)
+    baseDirectory: dist/book-wise/browser
     files:
-      - '**/*'  # Todos os arquivos gerados serão incluídos
+      - '**/*'
   cache:
     paths:
-      - node_modules/**/*  # Cache das dependências para builds mais rápidos
+      - node_modules/**/*
