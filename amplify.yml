@@ -1,17 +1,13 @@
 version: 1
 
 frontend:
-  environment:
-    variables:
-      NODE_VERSION: '22'  # Definindo a versão do Node.js
   phases:
     preBuild:
       commands:
-        - npm install -g @angular/cli@10  # Instalar o Angular CLI globalmente
-        - npm install  # Instalar dependências do projeto
+        - npx ng version
     build:
       commands:
-        - npm run build --configuration=production  # Executar build de produção
+        - npx ng build --configuration=production
   artifacts:
     baseDirectory: dist/book-wise/browser
     files:

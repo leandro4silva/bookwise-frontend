@@ -3,7 +3,7 @@ name: Deploy Angular App to S3 and Amplify
 on:
   push:
     branches:
-      - main  # Altere para o branch principal do seu repositório
+      - main  # Change to your main branch
 
 jobs:
   build-and-deploy:
@@ -33,10 +33,11 @@ jobs:
 
       - name: Cancel pending or running jobs in Amplify
         run: |
+          # List all jobs for the branch
           jobs=$(aws amplify list-jobs --app-id ${{ secrets.AMPLIFY_APP_ID }} --branch-name main --query 'jobs[?status==`PENDING` || status==`RUNNING`].jobId' --output text)
 
-          # Verificar se há jobs pendentes ou em execução
-          if [[ "$jobs" != "None" ]]; then
+          # Check if there are any pending or running jobs
+          if [[ -n "$jobs" ]]; then
             for job_id in $jobs; do
               echo "Canceling job with job-id: $job_id"
               aws amplify stop-job --app-id ${{ secrets.AMPLIFY_APP_ID }} --branch-name main --job-id $job_id
