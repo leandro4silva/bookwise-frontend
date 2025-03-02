@@ -38,6 +38,10 @@ jobs:
       - name: Install jq
         run: sudo apt-get install -y jq
 
+      - name: Verify jq installation
+        run: |
+          jq --version
+
       - name: Cancel previous Amplify deployment
         run: |
           # Listar trabalhos de implantação em andamento
@@ -60,10 +64,13 @@ jobs:
         run: |
           DEPLOYMENT_OUTPUT=$(aws amplify create-deployment \
             --app-id ${{ secrets.AMPLIFY_APP_ID }} \
-            --branch-name main)
+            --branch-name main \
+            --output json)
           echo "DEPLOYMENT_OUTPUT=$DEPLOYMENT_OUTPUT" >> $GITHUB_ENV
-          echo "JOB_ID=$(echo "$DEPLOYMENT_OUTPUT" | jq -r '.jobId')" >> $GITHUB_ENV
-          echo "ZIP_UPLOAD_URL=$(echo "$DEPLOYMENT_OUTPUT" | jq -r '.zipUploadUrl')" >> $GITHUB_ENV
+          JOB_ID=$(echo "$DEPLOYMENT_OUTPUT" | jq -r '.jobId')
+          ZIP_UPLOAD_URL=$(echo "$DEPLOYMENT_OUTPUT" | jq -r '.zipUploadUrl')
+          echo "JOB_ID=$JOB_ID" >> $GITHUB_ENV
+          echo "ZIP_UPLOAD_URL=$ZIP_UPLOAD_URL" >> $GITHUB_ENV
 
       - name: Upload Artifacts to Amplify
         run: |
