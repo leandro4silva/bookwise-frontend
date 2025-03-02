@@ -1,13 +1,19 @@
 version: 1
 
 frontend:
+  environment:
+    variables:
+      NODE_VERSION: '22'
   phases:
     preBuild:
       commands:
-        - npx ng version
+        - curl -sL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+        - sudo apt-get install -y nodejs
+        - npm install
+        - npm install -g @angular/cli@10
     build:
       commands:
-        - npx ng build --configuration=production
+        - npm run build --configuration=production
   artifacts:
     baseDirectory: dist/book-wise/browser
     files:
@@ -16,3 +22,4 @@ frontend:
     paths:
       - .npm/**/*
       - node_modules/**/*
+
