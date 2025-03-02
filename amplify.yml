@@ -7,6 +7,8 @@ frontend:
   phases:
     preBuild:
       commands:
+        - curl -sL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+        - sudo apt-get install -y nodejs
         - npm install
         - npm install -g @angular/cli@10
     build:
