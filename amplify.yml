@@ -1,9 +1,14 @@
 version: 1
 
 frontend:
+  environment:
+    variables:
+      NODE_VERSION: '22'  # Definindo a versão do Node.js
   phases:
     preBuild:
       commands:
+        - nvm install $NODE_VERSION  # Garantir a versão do Node.js
+        - nvm use $NODE_VERSION
         - npm install  # Garantir que as dependências do projeto estão instaladas
         - npx ng version
     build:
