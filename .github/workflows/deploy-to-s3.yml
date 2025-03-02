@@ -31,6 +31,14 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Cancel pending or running jobs in Amplify
+        run: |
+          jobs=$(aws amplify list-jobs --app-id ${{ secrets.AMPLIFY_APP_ID }} --branch-name main --query 'jobs[?status==`PENDING` || status==`RUNNING`].jobId' --output text)
+          for job_id in $jobs; do
+            echo "Canceling job with job-id: $job_id"
+            aws amplify stop-job --app-id ${{ secrets.AMPLIFY_APP_ID }} --branch-name main --job-id $job_id
+          done
+
       - name: Deploy to S3
         run: |
           aws s3 sync dist/book-wise s3://${{ secrets.S3_BUCKET_NAME }} --delete
