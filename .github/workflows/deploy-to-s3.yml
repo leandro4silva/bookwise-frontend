@@ -38,12 +38,22 @@ jobs:
       - name: Install jq
         run: sudo apt-get install -y jq
 
-      - name: Debug DEPLOYMENT_OUTPUT
+      - name: Cancel previous Amplify deployment
         run: |
-          DEPLOYMENT_OUTPUT=$(aws amplify create-deployment \
+          # Listar trabalhos de implantação em andamento
+          JOBS=$(aws amplify list-jobs \
             --app-id ${{ secrets.AMPLIFY_APP_ID }} \
-            --branch-name main)
-          echo "DEPLOYMENT_OUTPUT=$DEPLOYMENT_OUTPUT"
+            --branch-name main \
+            --query 'jobSummaries[?status==`PENDING` || status==`RUNNING`].jobId' \
+            --output text)
+
+          # Cancelar cada trabalho em andamento
+          for JOB_ID in $JOBS; do
+            aws amplify stop-job \
+              --app-id ${{ secrets.AMPLIFY_APP_ID }} \
+              --branch-name main \
+              --job-id $JOB_ID
+          done
 
       - name: Create Amplify Deployment
         id: create_deployment
