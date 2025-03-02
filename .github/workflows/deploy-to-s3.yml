@@ -38,6 +38,13 @@ jobs:
       - name: Install jq
         run: sudo apt-get install -y jq
 
+      - name: Debug DEPLOYMENT_OUTPUT
+        run: |
+          DEPLOYMENT_OUTPUT=$(aws amplify create-deployment \
+            --app-id ${{ secrets.AMPLIFY_APP_ID }} \
+            --branch-name main)
+          echo "DEPLOYMENT_OUTPUT=$DEPLOYMENT_OUTPUT"
+
       - name: Create Amplify Deployment
         id: create_deployment
         run: |
