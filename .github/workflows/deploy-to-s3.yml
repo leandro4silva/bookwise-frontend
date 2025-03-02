@@ -44,14 +44,20 @@ jobs:
 
       - name: Cancel previous Amplify deployments
         run: |
-          # Listar todos os trabalhos em andamento
-          JOBS=$(aws amplify list-jobs \
-            --app-id ${{ secrets.AMPLIFY_APP_ID }} \
-            --branch-name main \
-            --query 'jobSummaries[?status==`PENDING` || status==`RUNNING`].jobId' \
-            --output text)
+          echo "Verificando jobs em andamento..."
+          for attempt in {1..5}; do
+            JOBS=$(aws amplify list-jobs \
+              --app-id ${{ secrets.AMPLIFY_APP_ID }} \
+              --branch-name main \
+              --query 'jobSummaries[?status==`PENDING` || status==`RUNNING`].jobId' \
+              --output text)
 
-          if [ -n "$JOBS" ]; then
+            if [ -z "$JOBS" ]; then
+              echo "Nenhum job em execução."
+              break
+            fi
+
+            echo "Encontrado(s) job(s) pendente(s): $JOBS"
             for JOB_ID in $JOBS; do
               echo "Cancelando job $JOB_ID..."
               aws amplify stop-job \
@@ -59,47 +65,40 @@ jobs:
                 --branch-name main \
                 --job-id $JOB_ID
             done
-          else
-            echo "Nenhum job em execução para cancelar."
-          fi
 
-          # Esperar um pouco para garantir que os jobs foram cancelados
-          sleep 10
+            echo "Aguardando 5 segundos para verificar novamente..."
+            sleep 5
+          done
 
-          # Verificar se ainda há jobs em execução
-          RUNNING_JOBS=$(aws amplify list-jobs \
+          # Verificar novamente após aguardar
+          FINAL_JOBS=$(aws amplify list-jobs \
             --app-id ${{ secrets.AMPLIFY_APP_ID }} \
             --branch-name main \
             --query 'jobSummaries[?status==`PENDING` || status==`RUNNING`].jobId' \
             --output text)
 
-          if [ -n "$RUNNING_JOBS" ]; then
-            echo "Erro: Ainda existem jobs em execução. Aguarde ou cancele manualmente antes de prosseguir."
+          if [ -n "$FINAL_JOBS" ]; then
+            echo "Erro: Ainda existem jobs em execução. Cancelamento falhou."
             exit 1
-          else
-            echo "Todos os jobs pendentes foram cancelados com sucesso."
           fi
 
-      - name: Debug DEPLOYMENT_OUTPUT
-        run: |
-          DEPLOYMENT_OUTPUT=$(aws amplify create-deployment \
-            --app-id ${{ secrets.AMPLIFY_APP_ID }} \
-            --branch-name main \
-            --output json)
-          echo "DEPLOYMENT_OUTPUT=$DEPLOYMENT_OUTPUT"
+          echo "Todos os jobs pendentes foram cancelados com sucesso."
 
       - name: Create Amplify Deployment
         id: create_deployment
         run: |
+          echo "Criando novo deployment..."
           DEPLOYMENT_OUTPUT=$(aws amplify create-deployment \
             --app-id ${{ secrets.AMPLIFY_APP_ID }} \
             --branch-name main \
             --output json)
-          echo "DEPLOYMENT_OUTPUT=$DEPLOYMENT_OUTPUT" >> $GITHUB_ENV
+
           JOB_ID=$(echo "$DEPLOYMENT_OUTPUT" | jq -r '.jobId')
           ZIP_UPLOAD_URL=$(echo "$DEPLOYMENT_OUTPUT" | jq -r '.zipUploadUrl')
+
           echo "JOB_ID=$JOB_ID" >> $GITHUB_ENV
           echo "ZIP_UPLOAD_URL=$ZIP_UPLOAD_URL" >> $GITHUB_ENV
+          echo "Deployment criado com sucesso. JOB_ID: $JOB_ID"
 
       - name: Upload Artifacts to Amplify
         run: |
@@ -110,7 +109,10 @@ jobs:
 
       - name: Start Amplify Deployment
         run: |
+          echo "Iniciando deployment no Amplify..."
           aws amplify start-deployment \
             --app-id ${{ secrets.AMPLIFY_APP_ID }} \
             --branch-name main \
             --job-id ${{ env.JOB_ID }}
+          echo "Deployment iniciado."
+
