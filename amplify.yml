@@ -7,12 +7,12 @@ frontend:
   phases:
     preBuild:
       commands:
-        - npx install -g @angular/cli  # Garantir a instalação do Angular CLI
+        - npm install -g @angular/cli  # Instalar o Angular CLI globalmente
         - npm install  # Instalar dependências do projeto
-        - npx ng version  # Verificar a versão do Angular CLI
+        - ng version  # Verificar a versão do Angular CLI
     build:
       commands:
-        - npx ng build --configuration=production  # Executar build de produção
+        - ng build --configuration=production  # Executar build de produção
   artifacts:
     baseDirectory: dist/book-wise/browser
     files:
