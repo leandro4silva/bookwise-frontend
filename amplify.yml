@@ -7,7 +7,7 @@ frontend:
   phases:
     preBuild:
       commands:
-        - npm install -g @angular/cli  # Instalar o Angular CLI globalmente
+        - npm install -g @angular/cli@10  # Instalar o Angular CLI globalmente
         - npm install  # Instalar dependências do projeto
         - ng version  # Verificar a versão do Angular CLI
     build:
