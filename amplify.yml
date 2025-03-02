@@ -4,6 +4,7 @@ frontend:
   phases:
     preBuild:
       commands:
+        - npm install  # Garantir que as dependências do projeto estão instaladas
         - npx ng version
     build:
       commands:
