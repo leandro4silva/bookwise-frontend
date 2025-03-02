@@ -34,10 +34,16 @@ jobs:
       - name: Cancel pending or running jobs in Amplify
         run: |
           jobs=$(aws amplify list-jobs --app-id ${{ secrets.AMPLIFY_APP_ID }} --branch-name main --query 'jobs[?status==`PENDING` || status==`RUNNING`].jobId' --output text)
-          for job_id in $jobs; do
-            echo "Canceling job with job-id: $job_id"
-            aws amplify stop-job --app-id ${{ secrets.AMPLIFY_APP_ID }} --branch-name main --job-id $job_id
-          done
+
+          # Verificar se há jobs pendentes ou em execução
+          if [[ "$jobs" != "None" ]]; then
+            for job_id in $jobs; do
+              echo "Canceling job with job-id: $job_id"
+              aws amplify stop-job --app-id ${{ secrets.AMPLIFY_APP_ID }} --branch-name main --job-id $job_id
+            done
+          else
+            echo "No pending or running jobs found."
+          fi
 
       - name: Deploy to S3
         run: |
