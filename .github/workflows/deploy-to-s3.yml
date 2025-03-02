@@ -91,7 +91,7 @@ jobs:
             --branch-name main \
             --framework "Angular" \
             --enable-auto-build \
-            --output-dir "portal-bookwise/browser"
+            --output-dir "browser"
 
       - name: Create Amplify Deployment
         id: create_deployment
