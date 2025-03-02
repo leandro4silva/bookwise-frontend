@@ -3,7 +3,7 @@ name: Deploy Angular App to S3 and Amplify
 on:
   push:
     branches:
-      - main  # Altere para o branch que você deseja usar para o deploy
+      - main  # Altere para o branch principal do seu repositório
 
 jobs:
   build-and-deploy:
@@ -45,8 +45,8 @@ jobs:
             --app-id ${{ secrets.AMPLIFY_APP_ID }} \
             --branch-name main)
           echo "DEPLOYMENT_OUTPUT=$DEPLOYMENT_OUTPUT" >> $GITHUB_ENV
-          echo "JOB_ID=$(echo $DEPLOYMENT_OUTPUT | jq -r '.jobId')" >> $GITHUB_ENV
-          echo "ZIP_UPLOAD_URL=$(echo $DEPLOYMENT_OUTPUT | jq -r '.zipUploadUrl')" >> $GITHUB_ENV
+          echo "JOB_ID=$(echo "$DEPLOYMENT_OUTPUT" | jq -r '.jobId')" >> $GITHUB_ENV
+          echo "ZIP_UPLOAD_URL=$(echo "$DEPLOYMENT_OUTPUT" | jq -r '.zipUploadUrl')" >> $GITHUB_ENV
 
       - name: Upload Artifacts to Amplify
         run: |
