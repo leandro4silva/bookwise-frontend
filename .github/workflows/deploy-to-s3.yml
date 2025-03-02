@@ -3,7 +3,7 @@ name: Deploy Angular App to S3 and Amplify
 on:
   push:
     branches:
-      - main
+      - main  # Altere para o branch que você deseja usar para o deploy
 
 jobs:
   build-and-deploy:
@@ -35,9 +35,29 @@ jobs:
         run: |
           aws s3 sync dist/book-wise s3://${{ secrets.S3_BUCKET_NAME }} --delete
 
-      - name: Trigger Amplify build
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Create Amplify Deployment
+        id: create_deployment
         run: |
-          aws amplify start-job \
+          DEPLOYMENT_OUTPUT=$(aws amplify create-deployment \
+            --app-id ${{ secrets.AMPLIFY_APP_ID }} \
+            --branch-name main)
+          echo "DEPLOYMENT_OUTPUT=$DEPLOYMENT_OUTPUT" >> $GITHUB_ENV
+          echo "JOB_ID=$(echo $DEPLOYMENT_OUTPUT | jq -r '.jobId')" >> $GITHUB_ENV
+          echo "ZIP_UPLOAD_URL=$(echo $DEPLOYMENT_OUTPUT | jq -r '.zipUploadUrl')" >> $GITHUB_ENV
+
+      - name: Upload Artifacts to Amplify
+        run: |
+          zip -r deploy.zip dist/book-wise
+          curl -X PUT -H "Content-Type: application/zip" \
+            --data-binary @deploy.zip \
+            "${{ env.ZIP_UPLOAD_URL }}"
+
+      - name: Start Amplify Deployment
+        run: |
+          aws amplify start-deployment \
             --app-id ${{ secrets.AMPLIFY_APP_ID }} \
             --branch-name main \
-            --job-type RELEASE
+            --job-id ${{ env.JOB_ID }}
