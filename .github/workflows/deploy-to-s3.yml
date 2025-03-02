@@ -47,6 +47,7 @@ jobs:
           # Listar trabalhos de implantação em andamento
           JOBS=$(aws amplify list-jobs \
             --app-id ${{ secrets.AMPLIFY_APP_ID }} \
+            --branch-name main \
             --query 'jobSummaries[?status==`PENDING` || status==`RUNNING`].jobId' \
             --output text)
 
@@ -54,6 +55,7 @@ jobs:
           for JOB_ID in $JOBS; do
             aws amplify stop-job \
               --app-id ${{ secrets.AMPLIFY_APP_ID }} \
+              --branch-name main \
               --job-id $JOB_ID
           done
 
@@ -61,6 +63,7 @@ jobs:
         run: |
           DEPLOYMENT_OUTPUT=$(aws amplify create-deployment \
             --app-id ${{ secrets.AMPLIFY_APP_ID }} \
+            --branch-name main \
             --output json)
           echo "DEPLOYMENT_OUTPUT=$DEPLOYMENT_OUTPUT"
 
@@ -69,6 +72,7 @@ jobs:
         run: |
           DEPLOYMENT_OUTPUT=$(aws amplify create-deployment \
             --app-id ${{ secrets.AMPLIFY_APP_ID }} \
+            --branch-name main \
             --output json)
           echo "DEPLOYMENT_OUTPUT=$DEPLOYMENT_OUTPUT" >> $GITHUB_ENV
           JOB_ID=$(echo "$DEPLOYMENT_OUTPUT" | jq -r '.jobId')
@@ -87,4 +91,5 @@ jobs:
         run: |
           aws amplify start-deployment \
             --app-id ${{ secrets.AMPLIFY_APP_ID }} \
+            --branch-name main \
             --job-id ${{ env.JOB_ID }}
